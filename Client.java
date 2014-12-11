@@ -15,6 +15,7 @@ public class Client {
 	int portNumber = 8000;
 	ServerSocket sSocket;
 	Socket connection = null;
+	boolean done = false;
 
 	public void Client() {}
 
@@ -30,7 +31,7 @@ public class Client {
 			out = new ObjectOutputStream(requestSocket.getOutputStream());
 			out.flush();
 			in = new ObjectInputStream(requestSocket.getInputStream());
-			while (true) {
+			while (!done) {
 
 				System.out.println("0. Connect to the server");
 				System.out.println("1. Get the user list");
@@ -101,30 +102,19 @@ public class Client {
 					}
 				}
 				else if (input.equals("4")) {
-					try {
-						sendMessage("4");
-						String name = (String)in.readObject();
-						System.out.print("Please enter a port number: ");
-						int port = sc.nextInt();
-						chat4(port, name);
-					}
-					catch (ClassNotFoundException classnot) {
-						System.out.println("Class not found");
-					}
+					sendMessage("4");
+					chat4();
+					done = true;
 				}
 				else if (input.equals("5")) {
-					try {
-						sendMessage("5");
-						String name = (String)in.readObject();
-						System.out.print("Enter in an IP address: ");
-						String IPAddress = bufferedReader.readLine();
-						System.out.print("Enter in a port number: ");
-						int port = sc.nextInt();
-						chat5(IPAddress, port, name);
-					}
-					catch (ClassNotFoundException classnot) {
-						System.out.println("Class not found");
-					}
+					sendMessage("5");
+					System.out.print("Enter in an IP address: ");
+					String IPAddress = bufferedReader.readLine();
+					System.out.print("Enter in a port number: ");
+					int port = sc.nextInt();
+					chat5(IPAddress, port);
+					done = true;
+					
 				}
 				else {
 					System.out.println("Invalid input");
@@ -165,105 +155,16 @@ public class Client {
 		}
 	}
 	
-	void chat4(int Port, String name)
+	void chat4()
 	{
-		try{
-			//create a serversocket
-			sSocket = new ServerSocket(Port);
-			//Wait for connection
-			System.out.println("Waiting for connection");
-			//accept a connection from the client
-			connection = sSocket.accept();
-			System.out.println("Someone Connected!");
-			//initialize Input and Output streams
-			out = new ObjectOutputStream(connection.getOutputStream());
-			out.flush();
-			in = new ObjectInputStream(connection.getInputStream());
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-			try{
-				while(!MESSAGE.equals(name + ": Bye"))
-				{
-					//receive the message sent from the client
-					message = (String)in.readObject();
-					//show the message to the user
-					System.out.println(message);
-					System.out.print(name + ": ");
-					MESSAGE = name + ": " + bufferedReader.readLine();
-					//send MESSAGE back to the client
-					out.writeObject(MESSAGE);
-					out.flush();
-				}
-			}
-			catch(ClassNotFoundException classnot){
-					System.err.println("Data received in unknown format");
-				}
-		}
-		catch(IOException ioException){
-			ioException.printStackTrace();
-		}
-		finally{
-			//Close connections
-			try{
-				in.close();
-				out.close();
-				sSocket.close();
-			}
-			catch(IOException ioException){
-				ioException.printStackTrace();
-			}
-		}
+		Chat1 s = new Chat1();
+		s.setUp();
 	}
 	
-	void chat5(String IPAddress, int Port, String name)
+	void chat5(String IPAddress, int Port)
 	{
-		try{
-			//create a socket to connect to the server
-			requestSocket = new Socket(IPAddress, Port);
-			System.out.println("Connected!");
-			//initialize inputStream and outputStream
-			out = new ObjectOutputStream(requestSocket.getOutputStream());
-			out.flush();
-			in = new ObjectInputStream(requestSocket.getInputStream());
-			
-			//get Input from standard input
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-			while(!message.equals(name + ": Bye"))
-			{
-				System.out.print(name + ": ");
-				//read a sentence from the standard input
-				message = name + ": " + bufferedReader.readLine();
-				//Send the sentence to the server
-				out.writeObject(message);
-				out.flush();
-				//Receive the upperCase sentence from the server
-				MESSAGE = (String)in.readObject();
-				//show the message to the user
-				System.out.println(MESSAGE);
-			}
-		}
-		catch (ConnectException e) {
-    			System.err.println("Connection refused. You need to initiate a server first.");
-		} 
-		catch ( ClassNotFoundException e ) {
-            		System.err.println("Class not found");
-        	} 
-		catch(UnknownHostException unknownHost){
-			System.err.println("You are trying to connect to an unknown host!");
-		}
-		catch(IOException ioException){
-			ioException.printStackTrace();
-		}
-		finally{
-			//Close connections
-			try{
-				in.close();
-				out.close();
-				requestSocket.close();
-			}
-			catch(IOException ioException){
-				ioException.printStackTrace();
-			}
-		}
+		Chat2 c = new Chat2(IPAddress, Port);
+		c.connect();
 	}
 	//main method
 	public static void main(String args[])

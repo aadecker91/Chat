@@ -10,9 +10,7 @@ public class Server {
 	ServerSocket sSocket;   //serversocket used to lisen on port number 8000
 	Socket connection = null; //socket for the connection with the client
 	static String message;    //message received from the client
-	String MESSAGE;    //uppercase message send to the client
-	static ObjectOutputStream out;  //stream write to the socket
-	static ObjectInputStream in;    //stream read from the socket
+	static String username;    //uppercase message send to the client
 	int clientNumber;		//number of clients connected
 	static String[] users = new String[2];
 	static String[] passwords = new String[2];
@@ -66,6 +64,8 @@ public class Server {
  		private int clientNumber;
  		private String currentUser;
  		private boolean closed = false;
+ 		private ObjectOutputStream out;
+ 		private ObjectInputStream in;
  		
  		
  		public ServerThread(Socket socket, int clientNumber) {
@@ -85,21 +85,18 @@ public class Server {
  					System.out.println("Client " + clientNumber + " choice is 0");
 	 				while (!valid) {
 		 				sendMessage("Please enter your username: ");
-		 				message = (String)in.readObject();
+		 				username = (String)in.readObject();
+		 				sendMessage("Please enter your password");
+	 					message = (String)in.readObject();
 		 				for (int i = 0; i < users.length; i++) {
-		 					if (message.equals(users[i])) {
-		 						sendMessage("Please enter your password");
-		 						message = (String)in.readObject();
-		 						if (message.equals(passwords[i])) {
-		 							valid = true;
-		 							currentUser = users[i];
-		 							sendMessage("1");
-		 						}
-		 						else {
-		 							sendMessage("Incorrect password");
-		 							break;
-		 						}
-		 					}
+	 						if (message.equals(passwords[i]) && username.equals(users[i])) {
+	 							valid = true;
+	 							currentUser = users[i];
+	 							sendMessage("1");
+	 						}
+		 				}
+		 				if (!valid) {
+		 					sendMessage("Incorrect username or password");
 		 				}
 	 				}
 	 				sendMessage("Successfully logged in");
@@ -144,13 +141,11 @@ public class Server {
 	 				}
 					else if (message.equals("4")) {
 						System.out.println("Client " + clientNumber + " choice is 4");
-						sendMessage(currentUser);
 						closed = true;
 	 					System.out.println(currentUser + " has disconnected");
 					}
 					else if (message.equals("5")) {
 						System.out.println("Client " + clientNumber + " choice is 5");
-						sendMessage(currentUser);
 						closed = true;
 	 					System.out.println(currentUser + " has disconnected");
 		 			}
